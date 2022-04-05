@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Text Adventure</title>
+    <script src="p5.js"></script>
+    <!--consider removing background-->
+    <!--check after fixing button issue-->
+    <style>
+        body{
+            font-family: Ebrima, sans-serif;
+            background-image: url(stonebackground-pexels-photo.jpg);
+            color: white;
+            font-size: 25px;
+        }
+        h1{
+            text-align: center;
+        }
+        button{
+            border-color: black;
+            background-color: darkred;
+            color: black;
+            font-size: 20px;
+            font-family: fantasy, sans-serif;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            margin-right: 15px;
+            display: inline-block;
+        }
+        button:hover{
+            background-image: url("Blood.png");
+        }
+        button:focus{
+            outline: 0;
+        }
+    </style>
+</head>
+<body>
+<!-- Add breaks at the end of descriptions -->
+<h1>
+    <label id="labelTitle">
+        The Cave
+    </label>
+</h1>
+<p>
+    <label id="labelDescription">
+    **********This text will get replaced when the page loads**********
+    </label>
+</p>
+
+<button id = "button1">Attempt to break free.</button><br>
+<button id = "button2">Start yelling.</button><br>
+<button id = "button3">Look around at your surroundings.</button><br>
+<button id = "button4">***THIS OPTION IS HIDDEN AT THE START***</button>
+
+<script>
+    var canvasWidth = 900;
+    var canvasHeight = 900;
+    var gray;
+
+    var labelTitle = document.getElementById("labelTitle");
+    var labelDescription = document.getElementById("labelDescription");
+    var button1 = document.getElementById("button1");
+    var button2 = document.getElementById("button2");
+    var button3 = document.getElementById("button3");
+    var button4 = document.getElementById("button4");
+
+    var rustyKey = false;
+    var hammer = false;
+    var apple = false;
+    var locket = false;
+    var sneakLuck;
+    var hideLuck;
+
+
+    function preload(){
+        loadImage("Blood.png");
+        loadImage("stonebackground-pexels-photo.jpg");
+    }
+    function setup(){
+        console.log("You're in the console!");
+        createCanvas(canvasWidth, canvasHeight);
+        gray = color(89, 89, 89);
+        sneakLuck = Math.floor(random(1, 10.999999999));
+        hideLuck = Math.floor(random(1, 10.999999999));
+
+        button4.style.visibility="hidden";
+        labelTitle.innerHTML = "The Cave";
+        labelDescription.innerHTML =
+            "Your eyes slowly open, adjusting to the darkness. " +
+            "Your head aches and your memory is vague. " +
+            "You don't know how long you've been here, much less how you arrived. " +
+            "The room you are in is less-than-hospitable. " +
+            "It is muggy and lit by a couple of weak torches. " +
+            "Your stomach feels emptier than it has been for a long time. " +
+            "You attempt to move from the hard surface you feel underneath you, " +
+            "but you are held down by leather straps on your wrists and ankles. " +
+            "<br><br>What do you do?<br><br>";
+
+        button1.onclick = function () {actionBreakFree1()};
+        button2.onclick = function () {actionCaptorEnter()};
+        button3.onclick = function () {actionViewInitialRoom()};
+    }
+    //function draw(){
+
+    //}
+    function actionBreakFree1(){
+        labelTitle.innerHTML = "I Want to Break Free";
+        labelDescription.innerHTML =
+            "You push powerfully against your restraints. " +
+            "You can feel them weaken slightly, but you remain strapped down.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Try again.";
+        button2.textContent = "Give up and start yelling.";
+        button1.onclick = function () {actionBreakFree2()};
+        button2.onclick = function () {actionCaptorEnter()};
+    }
+    function actionBreakFree2(){
+        labelTitle.innerHTML = "I Want to Break Free";
+        labelDescription.innerHTML =
+            "You make one last, violent attempt to escape. " +
+            "You sigh in relief as you feel the straps tear away. " +
+            "You stagger as you push yourself from the table, " +
+            "but the adjustment is quick and you search for your next move.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Head straight for the door.";
+        button2.textContent = "Search the room.";
+        button1.onclick = function () {actionLeaveImmediately()};
+        button2.onclick = function () {actionGatherSupplies()};
+    }
+    function actionGatherSupplies(){
+        labelTitle.innerHTML = "The Room";
+        labelDescription.innerHTML =
+            "You decide to gather what you can before making your escape. " +
+            "You remove a torch from the wall, " +
+            "and find a rusty key and hammer discarded in the corner. " +
+            "Standing in the doorway, your torch illuminates three hallways extending in different directions.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="visible";
+        button4.style.visibility="hidden";
+        button1.textContent = "Go left.";
+        button2.textContent = "Go straight.";
+        button3.textContent = "Go right.";
+        button1.onclick = function () {actionLeftHallway()};
+        button2.onclick = function () {actionStraightHallway()};
+        button3.onclick = function () {actionRightHallway()};
+        rustyKey = true;
+        hammer = true;
+    }
+    function actionLeaveImmediately(){
+        labelTitle.innerHTML = "The Hall";
+        labelDescription.innerHTML =
+            "You make a break for the door, forgoing anything you may find in your prison. " +
+            "Outside the door is pure darkness. Your eyes try to make out any details, " +
+            "but see nothing concrete.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Quickly return to the room.";
+        button2.textContent = "Attempt to navigate the area.";
+        button1.onclick = function () {actionReturnInitialRoom()};
+        button2.onclick = function () {actionMoveBlindly()};
+    }
+    function actionReturnInitialRoom(){
+        labelTitle.innerHTML = "The Room";
+        labelDescription.innerHTML =
+            "You move back into the room you were just in. " +
+            "You grab a torch from the wall to light your way, " +
+            "as well as a rusty key and hammer discarded in the corner. " +
+            "Wasting no time, you return to the doorway and see hallways extending in three directions.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="visible";
+        button4.style.visibility="hidden";
+        button1.textContent = "Go left.";
+        button2.textContent = "Go straight.";
+        button3.textContent = "Go right.";
+        button1.onclick = function () {actionLeftHallway()};
+        button2.onclick = function () {actionStraightHallway()};
+        button3.onclick = function () {actionRightHallway()};
+        rustyKey = true;
+        hammer = true;
+    }
+    function actionLeftHallway(){
+        labelTitle.innerHTML = "The Storage Room";
+        labelDescription.innerHTML =
+            "You go left and find a room that appears to be used for storage. " +
+            "There are a few barrels, some shelves, and a trunk.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="visible";
+        button4.style.visibility="hidden";
+        button1.textContent = "Search the barrels and shelves.";
+        button2.textContent = "Search the trunk";
+        button3.textContent = "Ignore everything and leave.";
+        button1.onclick = function () {actionBarrelsShelves1()};
+        button2.onclick = function () {actionTrunk1()};
+        button3.onclick = function () {actionIgnoreLeft()};
+    }
+    function actionBarrelsShelves1(){
+        labelTitle.innerHTML = "Barrels and Shelves, Oh My";
+        labelDescription.innerHTML =
+            "You use your hammer to smash the top of the barrels. " +
+            "Inside you see only produce, taking an apple for the road. " +
+            "On the shelves are various bottles filled with mysterious liquids " +
+            "and a silver locket, which you take.<br><br>";
+            apple = true;
+            locket = true;
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Search the trunk.";
+        button2.textContent = "Leave.";
+        button1.onclick = function () {actionTrunk2()};
+        button2.onclick = function () {actionReturnHall()};
+    }
+    function actionBarrelsShelves2(){
+        labelTitle.innerHTML = "Barrels and Shelves, Oh My";
+        labelDescription.innerHTML =
+            "You use your hammer to smash the top of the barrels. " +
+            "Inside you see only produce, taking an apple for the road. " +
+            "On the shelves are various bottles filled with mysterious liquids " +
+            "and a silver locket, which you take." +
+            "You hear steps behind you, but it is too late. " +
+            "You are dead.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionTrunk1(){
+        labelTitle.innerHTML = "The Trunk";
+        labelDescription.innerHTML =
+            "You smash open the lock with your hammer. " +
+            "Inside, you see a set of books. " +
+            "They have a black covers embossed with a design you don't recognize. " +
+            "You find nothing else of value to you.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Search the barrels and shelves.";
+        button2.textContent = "Leave.";
+        button1.onclick = function () {actionBarrelsShelves2()};
+        button2.onclick = function () {actionReturnHall()};
+    }
+    function actionTrunk2(){
+        labelTitle.innerHTML = "The Trunk";
+        labelDescription.innerHTML =
+            "You smash open the lock with your hammer. " +
+            "Inside, you see a set of books. " +
+            "They have a black covers embossed with a design you don't recognize. " +
+            "You find nothing else of value to you. " +
+            "You hear steps behind you, but it is too late. " +
+            "You are dead.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionReturnHall(){
+        labelTitle.innerHTML = "The Hall";
+        labelDescription.innerHTML =
+            "You decide that you have gathered enough and return to the hallway. " +
+            "Luckily, the hall has remained unchanged.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="visible";
+        button4.style.visibility="hidden";
+        button1.textContent = "Go right.";
+        button2.textContent = "Go straight.";
+        button3.textContent = "Go left.";
+        button1.onclick = function () {actionRightHallway()};
+        button2.onclick = function () {actionStraightHallway()};
+
+    }
+    function actionIgnoreLeft(){
+        labelTitle.innerHTML = "The Hall";
+        labelDescription.innerHTML =
+            "You decide that it would be a waste of time to search the room. " +
+            "Luckily, the hall has remained unchanged.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="visible";
+        button4.style.visibility="hidden";
+        button1.textContent = "Go right.";
+        button2.textContent = "Go straight.";
+        button3.textContent = "Go left.";
+        button1.onclick = function () {actionRightHallway()};
+        button2.onclick = function () {actionStraightHallway()};
+        button3.onclick = function () {actionNoLeft()};
+    }
+    function actionNoLeft (){
+        labelTitle.innerHTMLl = "The Hall";
+        labelDescription.innerHTML =
+            "You were just there. " +
+            "Why would you want to go back?<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="visible";
+        button4.style.visibility="hidden";
+        button1.textContent = "Go right.";
+        button2.textContent = "Go straight.";
+        button3.textContent = "Insist on going left.";
+        button1.onclick = function () {actionRightHallway()};
+        button2.onclick = function () {actionStraightHallway()};
+        button3.onclick = function () {actionInsistLeft()};
+    }
+    function actionInsistLeft (){
+        labelTitle.innerHTML = "The Storage Room";
+        labelDescription.innerHTML =
+            "Despite the objection of me, the narrator, you go left. " +
+            "In your absence, a hooded figure has entered, searching the trunk. " +
+            "They hear your steps, stand, and kill you with a dagger. " +
+            "You are dead.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionMoveBlindly(){
+        labelTitle.innerHTML = "The Hall";
+        labelDescription.innerHTML =
+            "Seeing nothing, you decide to move into the darkness. " +
+            "Your steps are cautious. " +
+            "However, they are not cautious enough to avoid a large piece of debris on the ground. " +
+            "You trip and your head smashes into the stone floor. " +
+            "You are dead.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionCaptorEnter(){
+        labelTitle.innerHTML = "The Captor";
+        labelDescription.innerHTML =
+            "You begin to yell for help, hoping for a savior. " +
+            "Your voice disappears with the creak of a wooden door. " +
+            "A figure in a dark robe enters, holding an ornate knife. " +
+            "You shift nervously, but you cannot flee. " +
+            "The figure speaks softly. \"You are the chosen one.\"<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Attempt to free yourself.";
+        button2.textContent = "Attempt to talk your way out.";
+        button1.onclick = function () {actionCaptorBreak()};
+        button2.onclick = function () {actionCaptorTalk()};
+    }
+    function actionCaptorBreak(){
+        labelTitle.innerHTML = "The Captor";
+        labelDescription.innerHTML =
+            "You violently pull at the straps holding you down. " +
+            "They tear away with a <i>rip</i>. " +
+            "What do you do with your freedom?<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Fight.";
+        button2.textContent = "Flee.";
+        button1.onclick = function () {actionCaptorFight()};
+        button2.onclick = function () {actionCaptorFlee()};
+    }
+    function actionCaptorFight(){
+        labelTitle.innerHTML = "The Captor";
+        labelDescription.innerHTML =
+            "You decide to fight your captor. " +
+            "Unfortunately, you brought fists to a knife fight. " +
+            "The hooded figure stabs you in the gut. " +
+            "You are dead.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionCaptorFlee(){
+        labelTitle.innerHTML = "The Captor";
+        labelDescription.innerHTML =
+            "You decide to make a run for the door. " +
+            "When you reach it, you feel pain overwhelming you, spreading through your back. " +
+            "You are dead.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionCaptorTalk(){
+        labelTitle.innerHTML = "The Captor";
+        labelDescription.innerHTML =
+            "You choose to attempt to talk your way out. " +
+            "What do you say to your captor?<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="visible";
+        button4.style.visibility="hidden";
+        button1.textContent = "Offer information.";
+        button2.textContent = "Offer money.";
+        button3.textContent = "Tell a joke.";
+        button1.onclick = function () {actionCaptorInfo()};
+        button2.onclick = function () {actionCaptorMoney()};
+        button3.onclick = function () {actionCaptorJoke()};
+    }
+    function actionCaptorInfo(){
+        labelTitle.innerHTML = "The Captor";
+        labelDescription.innerHTML =
+            "You claim to have information that the figure would find valuable. " +
+            "Your captor speaks softly. \"My lord tells me all I need to know.\"" +
+            "The knife plunges down. " +
+            "You are dead.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionCaptorMoney(){
+        labelTitle.innerHTML = "The Captor";
+        labelDescription.innerHTML =
+            "You offer your captor gold. " +
+            "Your captor speaks softly. \"Your gold will be worthless in the new world.\"" +
+            "The knife plunges down. " +
+            "You are dead.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionCaptorJoke(){
+        labelTitle.innerHTML = "The Captor";
+        labelDescription.innerHTML =
+            "You choose to use your wit to escape. " +
+            "Your captor doesn't seem to appreciate chicken jokes. " +
+            "The knife plunges down. " +
+            "You are dead. Tough crowd.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionViewInitialRoom(){
+        labelTitle.innerHTML = "The Room";
+        labelDescription.innerHTML =
+            "There is not much to see. " +
+            "There is a strange substance on the walls. You decide to ignore it. " +
+            "An old, wooden door on the far side of the room is the only possible exit. " +
+            "You make out a pile of discarded objects, but can't discern anything specific.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Attempt to break free.";
+        button2.textContent = "Start yelling.";
+        button1.onclick = function () {actionBreakFree1()};
+        button2.onclick = function () {actionCaptorEnter()};
+    }
+    function actionStraightHallway(){
+        labelTitle.innerHTML = "The Dining Hall";
+        labelDescription.innerHTML =
+            "You choose to move straight ahead. " +
+            "There is a room at the end of this hall which is brightly lit. " +
+            "You move into the doorway and you are met by many eyes bearing down on you. " +
+            "You try to run, but it is useless. " +
+            "You are dead.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionRightHallway(){
+        labelTitle.innerHTML = "The Great Room";
+        labelDescription.innerHTML =
+            "You chose the hallway extending to the right. " +
+            "This hall feels overlong, but you continue. " +
+            "You eventually find yourself in a large opening of the cave. " +
+            "Sunlight breaks through the rocks, allowing you to see without your torch. " +
+            "To your left you see a wide stream over a short ridge. " +
+            "To your right is a rock wall. " +
+            "You can hear chatter, but you can't make it out.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Move along the wall.";
+        button2.textContent = "Go to the stream.";
+        button1.onclick = function () {actionMoveWall()};
+        button2.onclick = function () {actionGoStream()};
+    }
+    function actionGoStream(){
+        labelTitle.innerHTML = "The Stream";
+        labelDescription.innerHTML =
+            "You choose to approach the stream. " +
+            "The bank is free of people. " +
+            "The sound of the water helps you to realize your thirst. " +
+            "The chatter has grown stronger, but not by much.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Stop to drink.";
+        button2.textContent = "Follow the stream.";
+        button1.onclick = function () {actionStopDrink()};
+        button2.onclick = function () {actionFollowStream()};
+    }
+    function actionStopDrink(){
+        labelTitle.innerHTML = "The Stream";
+        labelDescription.innerHTML =
+            "You decide to stop and drink, " +
+            "your thirst now overwhelming you. " +
+            "You gulp down the water in handfuls. " +
+            "While you are distracted, a passerby kicks you into the stream, " +
+            "drowning you. You are dead.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionFollowStream(){
+        labelTitle.innerHTML = "The Camp";
+        labelDescription.innerHTML =
+            "You decide to follow the stream. " +
+            "You reach an encampment, the voices growing louder. " +
+            "Quickly, you hide behind a well-placed crate. " +
+            "With a little luck, you can sneak away.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Sneak away.";
+        button2.textContent = "Stay and eavesdrop.";
+        button1.onclick = function () {actionCampSneak()};
+        button2.onclick = function () {actionCampStay()};
+    }
+    function actionCampSneak(){
+        labelTitle.innerHTML = "The Camp";
+        labelDescription.innerHTML =
+            "You choose to sneak away, " +
+            "avoiding the chance of waiting to be caught. " +
+            "You find yourself in another corridor. " +
+            "After following it for a short period, " +
+            "it opens up into the world. You have found freedom. " +
+            "The question is: Do you go?<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Escape.";
+        button2.textContent = "Stay.";
+        button1.onclick = function () {actionFirstEscape()};
+        button2.onclick = function () {actionReturnCamp()};
+    }
+    function actionFirstEscape(){
+        labelTitle.innerHTML = "Escape";
+        labelDescription.innerHTML =
+            "You decide to make a break for it. " +
+            "You throw caution to the wind and slide down the hill in front of you. " +
+            "You stagger, breathing deeply, happy to be free from wherever you were being held. " +
+            "You have escaped <i>The Cave</i>.<br>";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionReturnCamp(){
+        labelTitle.innerHTML = "The Camp";
+        labelDescription.innerHTML =
+            "You decide to stay in the cave and learn more about it. " +
+            "You sneak back to the camp, hiding behind a barrel. " +
+            "You can still hear the voices and you can see the stream.<br><br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Eavesdrop.";
+        button2.textContent = "Move to the stream and then to the wall.";
+        button1.onclick = function () {actionCampStay()};
+        button2.onclick = function () {actionMoveWall2()};
+    }
+    function actionCampStay(){
+        labelTitle.innerHTML = "The Camp";
+        labelDescription.innerHTML =
+            "You remain behind your cover, focusing on the sounds behind it.<br> " +
+            "\"Are we actually ever going to complete The Transcendence?\" asks one of the men, " +
+            "clearly impatient. " +
+            "<br>A reply comes from a gruff voice. \"Trust in Arthur. He will bring us to the next world in time.\"<br>" +
+            "\"Starting to sound like a bunch of shit.\"" +
+            "<br>A third, lighter voice chimes in, \"You need to be patient.\" " +
+            "The impatient man scoffs at this, but says nothing further. " +
+            "The conversation seems to have ended.<br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="visible";
+        button4.style.visibility="hidden";
+        button1.textContent = "Keep listening.";
+        button2.textContent = "Attack the group.";
+        button3.textContent = "Sneak away.";
+        button1.onclick = function () {actionEavesdrop()};
+        button2.onclick = function () {actionAttackCamp()};
+        button3.onclick = function () {actionCampSneakAway()};
+    }
+    function actionCampSneakAway (){
+        if(sneakLuck > 3){
+            labelTitle.innerHTML = "The Wall";
+            labelDescription.innerHTML =
+                "You successfully sneak away from the camp and back to the stream. " +
+                "From there, you follow it back to the wall that first greeted you. " +
+                "It takes you to another hall and a series of doors. Wonderful. " +
+                "Which door do you choose?<br>";
+            button1.style.visibility="visible";
+            button2.style.visibility="visible";
+            button3.style.visibility="visible";
+            button4.style.visibility="visible";
+            button1.textContent = "The one on the right.";
+            button2.textContent = "The one on the left closest to you.";
+            button3.textContent = "The one on the left at the far end of the hall.";
+            button4.textContent = "The one at the very end of the hall.";
+            button1.onclick = function () {actionCryptDoor()};
+            button2.onclick = function () {actionQuartersDoor()};
+            button3.onclick = function () {actionArmoryDoor()};
+            button4.onclick = function () {actionGreatRoomDoor()};
+        }
+        else{
+            labelTitle.innerHTML = "The Camp";
+            labelDescription.innerHTML =
+                "You start to sneak away from the camp and its companions " +
+                "when you hear a shout behind you. " +
+                "You try to run, but you are not fast enough. " +
+                "You are dead.";
+            button1.style.visibility="hidden";
+            button2.style.visibility="hidden";
+            button3.style.visibility="hidden";
+            button4.style.visibility="hidden";
+        }
+    }
+    function actionAttackCamp(){
+        labelTitle.innerHTML = "The Camp";
+        labelDescription.innerHTML =
+            "You choose to storm the camp, wielding your hammer. " +
+            "You are able to land a killing blow on one of the men before you draw the attention of the others. " +
+            "You attempt to fight off the pair, but prove too weak. " +
+            "A knife slices into your neck. " +
+            "You are dead.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionEavesdrop() {
+        labelTitle.innerHTML = "The Camp";
+        labelDescription.innerHTML =
+            "You move closer to try and hear more, " +
+            "but you lose your footing. " +
+            "You trip and fall with a loud thud, bringing unwanted attention. " +
+            "They surround you, you scream. " +
+            "You are dead.";
+        button1.style.visibility="hidden";
+        button2.style.visibility="hidden";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+    }
+    function actionMoveWall(){
+        labelTitle.innerHTML = "The Wall";
+        labelDescription.innerHTML =
+            "You choose to move along the wall, ignoring the possibility of a cool drink. " +
+            "It takes you to another hall and a series of doors. Wonderful. " +
+            "Which door do you choose?<br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="visible";
+        button4.style.visibility="visible";
+        button1.textContent = "The one on the right.";
+        button2.textContent = "The one on the left closest to you.";
+        button3.textContent = "The one on the left at the far end of the hall.";
+        button4.textContent = "The one at the very end of the hall.";
+        button1.onclick = function () {actionCryptDoor()};
+        button2.onclick = function () {actionQuartersDoor()};
+        button3.onclick = function () {actionArmoryDoor()};
+        button4.onclick = function () {actionGreatRoomDoor()};
+    }
+    function actionMoveWall2(){
+        labelTitle.innerHTML = "The Wall";
+        labelDescription.innerHTML =
+            "You decide to not eavesdrop. You quietly move back to the stream " +
+            "and follow it back to the wall that first greeted you. " +
+            "The wall takes you to another hall and series of doors. " +
+            "Wonderful. " +
+            "Which door do you choose?<br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="visible";
+        button4.style.visibility="visible";
+        button1.textContent = "The one on the right.";
+        button2.textContent = "The one on the left closest to you.";
+        button3.textContent = "The one on the left at the far end of the hall.";
+        button4.textContent = "The one at the very end of the hall.";
+        button1.onclick = function () {actionCryptDoor()};
+        button2.onclick = function () {actionQuartersDoor()};
+        button3.onclick = function () {actionArmoryDoor()};
+        button4.onclick = function () {actionGreatRoomDoor()};
+    }
+    function actionChooseDoor(){
+        labelTitle.innerHTML = "The Doors";
+        labelDescription.innerHTML =
+            "You are faced with a choice of three doors. Which do you choose?<br>";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="visible";
+        button4.style.visibility="visible";
+        button1.textContent = "The one on the right.";
+        button2.textContent = "The one on the left closest to you.";
+        button3.textContent = "The one on the left at the far end of the hall.";
+        button4.textContent = "The one at the very end of the hall.";
+        button1.onclick = function () {actionCryptDoor()};
+        button2.onclick = function () {actionQuartersDoor()};
+        button3.onclick = function () {actionArmoryDoor()};
+        button4.onclick = function () {actionGreatRoomDoor()};
+    }
+    function actionCryptDoor(){
+        labelTitle.innerHTML = "The Crypt";
+        labelDescription.innerHTML =
+            "You chose the door on the right. " +
+            "You open it and are greeted by a steep set of stairs. ";
+        button1.style.visibility="visible";
+        button2.style.visibility="visible";
+        button3.style.visibility="hidden";
+        button4.style.visibility="hidden";
+        button1.textContent = "Continue down the stairs.";
+        button2.textContent = "Choose a different door.";
+        button1.onclick = function () {actionCrypt()};
+        button2.onclick = function () {actionChooseDoor()};
+    }
+    function actionCrypt(){
+        labelTitle.innerHTML = "The Crypt";
+        /*labelDescription.innerHTML =*/
+
+    }
+    function actionQuartersDoor(){
+
+    }
+    function actionArmoryDoor(){
+
+    }
+    function actionGreatRoomDoor(){
+
+    }
+
+</script>
+</body>
+</html>
